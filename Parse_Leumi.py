@@ -1,22 +1,18 @@
-import datetime
-import xlrd
-
-
-def parse_leumi_data(row, wb):
-    line_buffer = ""
-    valid_cols = [0, 1, 3, 4]
+def parse_leumi_data(row):
+    line_buffer: str = ""
+    valid_cols = [1, 2, 3]
     for col, col_value in enumerate(row):
         if col in valid_cols:
-            if col == 0:
-                date_tuple = xlrd.xldate_as_tuple(col_value.value, wb.datemode)
-                value = datetime.datetime(*date_tuple).strftime('%d/%m/%Y')
-                line_buffer += value + ","
-            elif col == 3:
-                value = str(col_value.value)
-                line_buffer += value + ",,"
-            else:
-                value = str(col_value.value)
-                line_buffer += value + ","
-        if col > max(valid_cols):
-            break
+            if col == 1:
+                day = col_value[0:2]
+                month = col_value[2:4]
+                year = int(col_value[4:6]) + 2000
+                line_buffer += day + "/" + month + "/" + str(year) + ","
+            if col == 2:
+                line_buffer += ''.join(reversed(col_value)) + ","
+            if col == 3:
+                if col_value.startswith("-"):
+                    line_buffer += col_value[1:] + ","
+                else:
+                    line_buffer += ", , " + col_value + ","
     return line_buffer
