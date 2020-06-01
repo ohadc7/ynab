@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import configparser
 import io
+import json
 import os
 import time
 from datetime import date, timedelta
@@ -16,9 +17,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from Parse_Leumi import parse_leumi_data
 from Parse_Max import parse_max_data
+from post_transactions import convert_csv_line_to_transaction, post_transaction, get_init_data
 
-LEUMI = 1
-MAX = 2
+
+def get_config_file():
+    config = configparser.ConfigParser()
+
+    config.read('../payload_data.ini')
+
+    return config
 
 
 def create_csv_files(path, file_name):
@@ -47,10 +54,7 @@ def chrome_driver(download_path):
     return browser
 
 
-def scrape_data_from_max(dir_path):
-    config = configparser.ConfigParser()
-
-    config.read('../payload_data.ini')
+def scrape_data_from_max(config, dir_path):
 
     driver = chrome_driver(os.getcwd() + os.sep + dir_path + os.sep + "max")
 
@@ -72,7 +76,7 @@ def scrape_data_from_max(dir_path):
 
     for card in cards:
         driver.get(after_login_url + card + curr_date + sort_val)
-        WebDriverWait(driver, 15).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, "print-excel")))
+        WebDriverWait(driver, 25).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, "print-excel")))
         driver.implicitly_wait(15)
         driver.find_element_by_class_name("download-excel").click()
         time.sleep(10)
@@ -80,10 +84,7 @@ def scrape_data_from_max(dir_path):
     driver.close()
 
 
-def scrape_data_from_leumi(dir_path):
-    config = configparser.ConfigParser()
-
-    config.read('../payload_data.ini')
+def scrape_data_from_leumi(config, dir_path):
 
     driver = chrome_driver(os.getcwd() + os.sep + dir_path + os.sep + "leumi")
 
@@ -131,14 +132,21 @@ def scrape_data_from_leumi(dir_path):
 
     driver.switch_to.window(window_after)
 
+    time.sleep(10)
+
     driver.find_element_by_css_selector("input[type='radio'][value='radioHashavshevet']").click()
 
     driver.find_element_by_id("ImgContinue").click()
+
+    time.sleep(10)
 
     driver.switch_to.window(window_before)
 
 
 def csv_from_excel(path):
+
+    data = get_init_data()
+
     for subdir, dirs, files in os.walk(path):
         for file_name in files:
             if "out" in subdir:
@@ -148,28 +156,45 @@ def csv_from_excel(path):
             if "max" in subdir:
                 wb = xlrd.open_workbook(file_path)
                 for sheet in wb.sheets():
+                    if "עסקאות שאושרו וטרם נקלטו" in sheet.name:
+                        continue
                     clean_sheet_name = sheet.name.replace('"', '')
                     clean_sheet_name += " - " + sheet.row(1)[0].value + " - " + sheet.row(2)[0].value.replace("/",
                                                                                                               "-")
+                    tx_data = {"transactions": []}
+                    if "4725" in clean_sheet_name:
+                        account = data["data_cache"]["ohad_credit_card"]
+                    else:
+                        account = data["data_cache"]["shlomit_credit_card"]
                     csv_output = create_csv_files(subdir, clean_sheet_name)
                     for row in range(4, sheet.nrows):
                         if sheet.row(row)[0].value != "":
                             line_buff = parse_max_data(sheet.row(row))
                             csv_output.write(line_buff + "\n\r")
+                            tx_data["transactions"] = convert_csv_line_to_transaction(tx_data["transactions"],
+                                                                                      line_buff, account)
+                    post_transaction(tx_data)
+
             else:
                 with open(file_path, "r", encoding='cp862') as dat_file:
                     lines_list = dat_file.readlines()
                     split_lines = [x.split(",") for x in lines_list]
                     csv_output = create_csv_files(subdir, "leumi")
+                    tx_data = {"transactions": []}
+                    account = data["data_cache"]["leumi_account_id"]
                     for row in split_lines:
                         line_buff = parse_leumi_data(row)
                         csv_output.write(line_buff + "\n\r")
+                        tx_data["transactions"] = convert_csv_line_to_transaction(
+                            tx_data["transactions"], line_buff, account)
+                    post_transaction(tx_data)
 
 
 def main():
     dir_path = make_new_dir()
-    scrape_data_from_max(dir_path)
-    scrape_data_from_leumi(dir_path)
+    config = get_config_file()
+    scrape_data_from_max(config, dir_path)
+    scrape_data_from_leumi(config, dir_path)
     csv_from_excel(dir_path)
 
 

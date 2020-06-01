@@ -2,3 +2,4 @@ nsf/
 __pycache__/
 .idea/
 payload_data.ini
+ynab_data_file.json
