@@ -26,7 +26,7 @@ def convert_csv_line_to_transaction(tx_data, line_buff, account):
                 "category_id": None,
                 "memo": memo,
                 "cleared": "cleared",
-                "approved": True,
+                "approved": False,
                 "flag_color": None,
                 "import_id": None,
             }
@@ -59,7 +59,7 @@ def get_init_data():
         budgets = requests.get('https://api.youneedabudget.com/v1/budgets', headers=header)
         budgets.raise_for_status()
         budgets = budgets.json()['data']['budgets']
-        budget_id = get_id_for_name(budgets, 'experiments3')
+        budget_id = get_id_for_name(budgets, config['ynab_accounts']['budget_name'])
 
         accounts = requests.get('https://api.youneedabudget.com/v1/budgets/' + budget_id + '/accounts', headers=header)
         accounts.raise_for_status()
