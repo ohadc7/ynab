@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
 import configparser
 import datetime
@@ -9,12 +9,12 @@ import requests
 def convert_csv_line_to_transaction(tx_data, line_buff, account):
 
     line = line_buff.split(",")
-    if line[2] is not "":
+    if line[2] != "":
         amount = int(1000 * float(line[2])) * - 1
     else:
         amount = int(1000 * float(line[4]))
     memo = None
-    if line[3] is not "":
+    if line[3] != "":
         memo = line[3]
     tx_data.append(
             {
@@ -89,6 +89,6 @@ def get_init_data():
 def post_transaction(tx_data):
     init_data = get_init_data()
 
-    txresponse = requests.post('https://api.youneedabudget.com/v1/budgets/' + init_data['data_cache']['budget_id']
+    tx_response = requests.post('https://api.youneedabudget.com/v1/budgets/' + init_data['data_cache']['budget_id']
                                + '/transactions', headers=init_data['header'], json=tx_data).json()
-    print(json.dumps(txresponse, indent=4))
+    print(json.dumps(tx_response, indent=4))
