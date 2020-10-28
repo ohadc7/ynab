@@ -40,7 +40,7 @@ class Scrapers:
 
         after_login_url = self.config['max']['after_login_url']
 
-        cards = ["-1_1_1_", "-1_0_1_"]
+        cards = ["-1_0_1_"]
 
         curr_date = str(date.today().year) + "-" + str(date.today().month) + "-01"
 
@@ -54,6 +54,41 @@ class Scrapers:
             time.sleep(10)
 
         self.driver.close()
+
+    def scrape_data_from_isracard(self):
+
+        self.chrome_driver("isracard")
+
+        self.driver.get(self.config['isracard']['login_url'])
+
+        #WebDriverWait(self.driver, 10).until(ec.visibility_of_all_elements_located((By.CLASS_NAME, "login-registered")))
+
+        self.driver.find_element_by_id('otpLoginId_ID').send_keys(self.config['isracard']['username'])
+        self.driver.find_element_by_name('otpLoginLastDigits_ID').send_keys(self.config['isracard']['last_digits'])
+        self.driver.find_element_by_id("otpLoginPwd").send_keys(self.config['isracard']['password'])
+        #self.driver.find_element_by_css_selector('.btn.btn-default.center-block.btn-send.col-sm-12').click()
+
+       # t = self.driver.find_element_by_class_name("btn btn-default center-block btn-send col-sm-12")
+        #self.driver.find_element(By.CLASS_NAME("btn btn-default center-block btn-send col-sm-12"))
+        self.driver.find_elements_by_xpath("//input[@class='btn btn-default center-block btn-send col-sm-12']")
+        btn2 = self.driver.find_element(By.CSS_SELECTOR("input[class='btn btn-default center-block btn-send col-sm-12']"))
+        btn3 = self.driver.find_element(By.CSS_SELECTOR("input.btn.btn-default.center-block.btn-send.col-sm-12']"))
+        btn4 = self.driver.find_element(By.CSS_SELECTOR(".btn.btn-default.center-block.btn-send.col-sm-12']"))
+
+        # after_login_url = self.config['max']['after_login_url']
+        #
+        # cards = ["-1_0_1_"]
+        #
+        # curr_date = str(date.today().year) + "-" + str(date.today().month) + "-01"
+        #
+        # sort_val = "&sort=1a_1a_1a_1a_1a"
+        #
+        # for card in cards:
+        #     self.driver.get(after_login_url + card + curr_date + sort_val)
+        #     WebDriverWait(self.driver, 25).until(ec.visibility_of_all_elements_located((By.CLASS_NAME, "print-excel")))
+        #     self.driver.implicitly_wait(15)
+        #     self.driver.find_element_by_class_name("download-excel").click()
+        #     time.sleep(10)
 
     def scrape_data_from_leumi(self):
 

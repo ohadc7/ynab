@@ -19,40 +19,40 @@ class Progress:
         self.progressbar = ttk.Progressbar(parent, orient=HORIZONTAL, length=100, mode='determinate',
                                            maximum=self.maximum)
         self.progressbar.grid(row=1, ipady=30, ipadx=100)
-        self.thread = threading.Thread()
-        self.thread.__init__(target=self.progressbar.start(self.interval),
-                             args=())
-        self.thread.start()
+        #self.thread = threading.Thread()
+        #self.thread.__init__(target=self.progressbar.start(self.interval),
+        #                             args=())
+        #self.thread.start()
 
-    def pb_stop(self):
-        """ stops the progress bar """
-        if not self.thread.is_alive():
-            VALUE = self.progressbar["value"]
-            self.progressbar.stop()
-            self.progressbar["value"] = VALUE
-
-    def pb_start(self):
-        """ starts the progress bar """
-        if not self.thread.is_alive():
-            VALUE = self.progressbar["value"]
-            self.progressbar.configure(mode="indeterminate",
-                                       maximum=self.maximum,
-                                       value=VALUE)
-            self.progressbar.start(self.interval)
-
-    def pb_clear(self):
-        """ stops the progress bar """
-        if not self.thread.is_alive():
-            self.progressbar.stop()
-            self.progressbar.configure(mode="determinate", value=0)
-
-    def pb_complete(self):
-        """ stops the progress bar and fills it """
-        if not self.thread.is_alive():
-            self.progressbar.stop()
-            self.progressbar.configure(mode="determinate",
-                                       maximum=self.maximum,
-                                       value=self.maximum)
+    # def pb_stop(self):
+    #     """ stops the progress bar """
+    #     if not self.thread.is_alive():
+    #         VALUE = self.progressbar["value"]
+    #         self.progressbar.stop()
+    #         self.progressbar["value"] = VALUE
+    #
+    # def pb_start(self):
+    #     """ starts the progress bar """
+    #     if not self.thread.is_alive():
+    #         VALUE = self.progressbar["value"]
+    #         self.progressbar.configure(mode="indeterminate",
+    #                                    maximum=self.maximum,
+    #                                    value=VALUE)
+    #         self.progressbar.start(self.interval)
+    #
+    # def pb_clear(self):
+    #     """ stops the progress bar """
+    #     if not self.thread.is_alive():
+    #         self.progressbar.stop()
+    #         self.progressbar.configure(mode="determinate", value=0)
+    #
+    # def pb_complete(self):
+    #     """ stops the progress bar and fills it """
+    #     if not self.thread.is_alive():
+    #         self.progressbar.stop()
+    #         self.progressbar.configure(mode="determinate",
+    #                                    maximum=self.maximum,
+    #                                    value=self.maximum)
 
 
 class Application(ttk.Frame):
@@ -62,7 +62,7 @@ class Application(ttk.Frame):
         self.grid()
 
         self.start = None
-        self.progress_bar = Progress(master, row=0, column=0, columnspan=2)
+        # self.progress_bar = Progress(master, row=0, column=0, columnspan=2)
 
         self._start_bar = None
         self.quit = None
@@ -84,28 +84,10 @@ class Application(ttk.Frame):
     def start_cmd(self):
         utils = Utils()
         scraper = Scrapers(dir_path=utils.dir_path, config=utils.config)
-        scraper.scrape_data_from_leumi()
-        # self.progress_bar['value'] = 20
-        # self.progress_bar.update_idletasks()
-        # time.sleep(1)
-        scraper.scrape_data_from_max()
-        # self.progress_bar['value'] = 40
-        # self.progress_bar.update_idletasks()
-        # time.sleep(1)
-        # utils.csv_from_excel()
-
-        # self.progress_bar['value'] = 50
-        # self.progress_bar.update_idletasks()
-        # time.sleep(1)
-        #
-        # self.progress_bar['value'] = 60
-        # self.progress_bar.update_idletasks()
-        # time.sleep(1)
-        #
-        # self.progress_bar['value'] = 80
-        # self.progress_bar.update_idletasks()
-        # time.sleep(1)
-        # self.progress_bar['value'] = 100
+        scraper.scrape_data_from_isracard()
+        #scraper.scrape_data_from_leumi()
+        #scraper.scrape_data_from_max()
+        #utils.csv_from_excel()
 
 
 def main():
