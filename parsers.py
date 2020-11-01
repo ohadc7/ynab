@@ -43,3 +43,20 @@ class Parsers:
             if col > max(self.valid_cols):
                 break
         return line_buffer
+
+    # TODO: make common code for parse max and isracard to avoid duplicate code
+    def parse_isracard_data(self, row):
+        line_buffer = ""
+        for col, col_value in enumerate(row):
+            if col in self.valid_cols:
+                if col == 0:
+                    day, month, year = col_value.value.split("/")
+                    value = year + "-" + month + "-" + day
+                else:
+                    value = col_value.value
+                if col == 4:
+                    value = str(value)
+                line_buffer += value + ","
+            if col > max(self.valid_cols):
+                break
+        return line_buffer

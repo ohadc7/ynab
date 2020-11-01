@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import date
 
-from datetime import date, timedelta
 from selenium import webdriver
 import time
 import os
@@ -22,19 +22,20 @@ class Scrapers:
         """ Helper function that creates a new Selenium browser """
         chrome_options = webdriver.ChromeOptions()
         os.makedirs(download_path, exist_ok=True)
+        chrome_options.add_argument("--start-maximized")
         prefs = {"profile.default_content_settings.popups": 0, "download.default_directory": download_path}
         chrome_options.add_experimental_option('prefs', prefs)
         self.driver = webdriver.Chrome(options=chrome_options)
 
     def scrape_data_from_max(self):
-
         self.chrome_driver("max")
 
         self.driver.get(self.config['max']['login_url'])
 
         WebDriverWait(self.driver, 10).until(ec.visibility_of_all_elements_located((By.CLASS_NAME, "login-registered")))
 
-        self.driver.find_element_by_id('PlaceHolderMain_CardHoldersLogin1_txtUserName').send_keys(self.config['max']['username'])
+        self.driver.find_element_by_id('PlaceHolderMain_CardHoldersLogin1_txtUserName').send_keys(
+            self.config['max']['username'])
         self.driver.find_element_by_id("txtPassword").send_keys(self.config['max']['password'])
         self.driver.find_element_by_id("PlaceHolderMain_CardHoldersLogin1_btnLogin").click()
 
@@ -56,42 +57,33 @@ class Scrapers:
         self.driver.close()
 
     def scrape_data_from_isracard(self):
-
         self.chrome_driver("isracard")
 
         self.driver.get(self.config['isracard']['login_url'])
 
-        #WebDriverWait(self.driver, 10).until(ec.visibility_of_all_elements_located((By.CLASS_NAME, "login-registered")))
-
         self.driver.find_element_by_id('otpLoginId_ID').send_keys(self.config['isracard']['username'])
         self.driver.find_element_by_name('otpLoginLastDigits_ID').send_keys(self.config['isracard']['last_digits'])
         self.driver.find_element_by_id("otpLoginPwd").send_keys(self.config['isracard']['password'])
-        #self.driver.find_element_by_css_selector('.btn.btn-default.center-block.btn-send.col-sm-12').click()
+        self.driver.find_element_by_id("otpLobbyFormPassword").submit()
 
-       # t = self.driver.find_element_by_class_name("btn btn-default center-block btn-send col-sm-12")
-        #self.driver.find_element(By.CLASS_NAME("btn btn-default center-block btn-send col-sm-12"))
-        self.driver.find_elements_by_xpath("//input[@class='btn btn-default center-block btn-send col-sm-12']")
-        btn2 = self.driver.find_element(By.CSS_SELECTOR("input[class='btn btn-default center-block btn-send col-sm-12']"))
-        btn3 = self.driver.find_element(By.CSS_SELECTOR("input.btn.btn-default.center-block.btn-send.col-sm-12']"))
-        btn4 = self.driver.find_element(By.CSS_SELECTOR(".btn.btn-default.center-block.btn-send.col-sm-12']"))
+        after_login_url = self.config['isracard']['after_login_url']
 
-        # after_login_url = self.config['max']['after_login_url']
-        #
-        # cards = ["-1_0_1_"]
-        #
-        # curr_date = str(date.today().year) + "-" + str(date.today().month) + "-01"
-        #
-        # sort_val = "&sort=1a_1a_1a_1a_1a"
-        #
-        # for card in cards:
-        #     self.driver.get(after_login_url + card + curr_date + sort_val)
-        #     WebDriverWait(self.driver, 25).until(ec.visibility_of_all_elements_located((By.CLASS_NAME, "print-excel")))
-        #     self.driver.implicitly_wait(15)
-        #     self.driver.find_element_by_class_name("download-excel").click()
-        #     time.sleep(10)
+        time.sleep(5)
+
+        self.driver.get(after_login_url)
+
+        header = WebDriverWait(self.driver, 10). \
+            until(ec.visibility_of_all_elements_located((By.CSS_SELECTOR, "div.card-box__hidden-mobile.export-list")))
+
+        all_children_by_css = header[0].find_elements_by_css_selector("*")
+
+        all_children_by_css[1].click()
+
+        time.sleep(10)
+
+        self.driver.close()
 
     def scrape_data_from_leumi(self):
-
         self.chrome_driver("leumi")
 
         self.driver.get(self.config['leumi']['login_url'])
@@ -109,14 +101,9 @@ class Scrapers:
 
         WebDriverWait(self.driver, 10).until(ec.visibility_of_all_elements_located((By.ID, "dtFromDate_textBox")))
 
-        last_day_of_prev_month = date.today().replace(day=1) - timedelta(days=1)
+        start_date = self.config['leumi']['last_time_used']
 
-        start_day_of_prev_month = date.today().replace(day=1) - timedelta(days=last_day_of_prev_month.day)
-
-        start_date = "01/" + str(start_day_of_prev_month.month) + "/" + str(start_day_of_prev_month.year - 2000)
-
-        end_date = str(last_day_of_prev_month.day) + "/" + str(last_day_of_prev_month.month) + "/" + str(
-            last_day_of_prev_month.year - 2000)
+        end_date = str(date.today().day) + "/" + str(date.today().month) + "/" + str(date.today().year - 2000)
 
         self.driver.find_element_by_id("dtFromDate_textBox").clear()
 
@@ -145,5 +132,8 @@ class Scrapers:
         self.driver.find_element_by_id("ImgContinue").click()
 
         time.sleep(10)
+
+        self.config['leumi']['last_time_used'] = str(date.today().day + 1) + "/" + str(date.today().month) + "/" + \
+                                                 str(date.today().year - 2000)
 
         self.driver.switch_to.window(window_before)
