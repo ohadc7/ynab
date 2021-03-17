@@ -50,7 +50,8 @@ class Parsers:
         for col, col_value in enumerate(row):
             if col in self.valid_cols:
                 if col == 0:
-                    day, month, year = col_value.value.split("/")
+                    date = col_value.value#.split("/")[2] + "-" + col_value.value.split("/")[1] + "-" + col_value.value.split("/")[0]
+                    day, month, year = date.split("/")
                     value = year + "-" + month + "-" + day
                 else:
                     value = col_value.value

@@ -7,7 +7,7 @@ from tkinter import *
 from post_transactions import Transactions
 from scrapers import Scrapers
 from utils import Utils
-
+from Naked.toolshed.shell import execute_js
 
 class Progress:
     """ threaded progress bar for tkinter gui """
@@ -29,30 +29,48 @@ class Application(ttk.Frame):
         self.start = None
         self.quit = None
         self.create_widgets()
+        self.transactions = Transactions()
+        self.utils = None
+
 
     def create_widgets(self):
         self.master.geometry("400x400")
         self.master.title("YNAB automatic parser")
         self.master.iconbitmap(Utils.resource_path("YNAB.ico"))
         self.start = ttk.Button(self, width=50)
-        self.start["text"] = "Start Operation"
-        self.start["command"] = self.start_cmd
+        self.start["text"] = "Download Data"
+        self.start["command"] = self.download_transactions_data
 
         self.start.grid(row=0, column=0, ipady=30, ipadx=30)
 
-        self.quit = ttk.Button(self, text="Quit", command=self.master.destroy, width=50)
-        self.quit.grid(row=4, column=0, pady=4, sticky=NE, ipady=30, ipadx=30)
+        self.start = ttk.Button(self, width=50)
+        self.start["text"] = "Parse data and upload to YNAB"
+        self.start["command"] = self.parse_and_upload_cmd
 
-    def start_cmd(self):
-        transactions = Transactions()
-        data = transactions.get_init_data()
-        utils = Utils(transactions)
-        scraper = Scrapers(dir_path=utils.dir_path, config=utils.config)
-        scraper.scrape_data_from_isracard()
-        scraper.scrape_data_from_leumi()
-        scraper.scrape_data_from_max()
-        utils.csv_from_excel(data)
-        transactions.post_transaction(utils.get_tx_data(), data)
+        self.start.grid(row=2, column=0, ipady=30, ipadx=30)
+
+        self.quit = ttk.Button(self, text="Quit", command=self.master.destroy, width=50)
+        self.quit.grid(row=3, column=0, ipady=30, ipadx=30)
+
+    def download_transactions_data(self):
+        self.utils = Utils(self.transactions)
+        #
+        scraper = Scrapers(dir_path=self.utils.dir_path, config=self.utils.config)
+        # # scraper.scrape_data_from_isracard()
+       # scraper.scrape_data_from_leumi()
+        # # scraper.scrape_data_from_max()
+        # success = execute_js('../scrape.js')
+        # if success:
+        #     print("success")
+        # else:
+        #     print("failed")
+
+
+    def parse_and_upload_cmd(self):
+        data = self.transactions.get_init_data()
+
+        self.utils.csv_from_excel(data)
+        self.transactions.post_transaction(self.utils.get_tx_data(), data)
 
 
 def main():

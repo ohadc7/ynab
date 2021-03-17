@@ -133,7 +133,6 @@ class Scrapers:
 
         time.sleep(10)
 
-        self.config['leumi']['last_time_used'] = str(date.today().day + 1) + "/" + str(date.today().month) + "/" + \
-                                                 str(date.today().year - 2000)
+        self.config['leumi']['last_time_used'] = end_date
 
         self.driver.switch_to.window(window_before)

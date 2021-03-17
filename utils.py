@@ -42,7 +42,7 @@ class Utils:
 
     def make_new_dir(self):
         last_month = date.today().replace(day=1) - timedelta(days=1)
-        self._dir_path = str(last_month.month) + "." + str(date.today().year)
+        self._dir_path = str(last_month.month) + "." + str(last_month.year)
         Path(self.dir_path).mkdir(parents=True, exist_ok=True)
 
     def get_tx_data(self):
